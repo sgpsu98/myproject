@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Haoyue Shuai" />
+
+
+<title>R exercise: phenotype data proprocessing</title>
+
+<script src="site_libs/header-attrs-2.5/header-attrs.js"></script>
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/anchor-sections-1.0/anchor-sections.css" rel="stylesheet" />
+<script src="site_libs/anchor-sections-1.0/anchor-sections.js"></script>
+<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+
+<link rel="icon" href="https://github.com/workflowr/workflowr-assets/raw/master/img/reproducible.png">
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">myproject</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/sgpsu98/myproject">
+    <span class="fa fa-github"></span>
+     
+    Source code
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">R exercise: phenotype data proprocessing</h1>
+<h4 class="author">Haoyue Shuai</h4>
+<h4 class="date">Oct. 8th, 2020</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2021-08-19
+</p>
+<p>
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 6 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 1
+</p>
+<p>
+<strong>Knit directory:</strong> <code>myproject/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
+</p>
+<p>
+This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
+  href="https://github.com/jdblischak/workflowr">workflowr</a> (version 1.6.2). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguncommittedchanges"> <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> <strong>R Markdown file:</strong> uncommitted changes </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguncommittedchanges" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The R Markdown is untracked by Git. To know which version of the R Markdown file created these results, you’ll want to first commit it to the Git repo. If you’re still working on the analysis, you can ignore this warning. When you’re finished, you can run <code>wflow_publish</code> to commit the R Markdown file and build the HTML.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20210819code"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Seed:</strong> <code>set.seed(20210819)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20210819code" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20210819)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Session information:</strong> recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be confident that you successfully produced the results during this run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcomsgpsu98myprojecttree0a56814f7f08739cb2afd7193658034b297b9383targetblank0a56814a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/sgpsu98/myproject/tree/0a56814f7f08739cb2afd7193658034b297b9383" target="_blank">0a56814</a> </a>
+</p>
+</div>
+<div id="strongRepositoryversionstrongahrefhttpsgithubcomsgpsu98myprojecttree0a56814f7f08739cb2afd7193658034b297b9383targetblank0a56814a" class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility.
+</p>
+<p>
+The results in this page were generated with repository version <a href="https://github.com/sgpsu98/myproject/tree/0a56814f7f08739cb2afd7193658034b297b9383" target="_blank">0a56814</a>. See the <em>Past versions</em> tab to see a history of the changes made to the R Markdown and HTML files.
+</p>
+<p>
+Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .DS_Store
+    Ignored:    analysis/.Rhistory
+
+Untracked files:
+    Untracked:  analysis/orientation.Rmd
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+<p>
+There are no past versions. Publish this analysis with <code>wflow_publish()</code> to start tracking its development.
+</p>
+<hr>
+</div>
+</div>
+</div>
+<div style="page-break-after: always;"></div>
+<div id="instruction" class="section level2">
+<h2>Instruction</h2>
+<p>This exercise was adapted by Haoyue Shuai from one of her analysis on phenotype data in preparation for genetic association studies. Don’t panic if you’re just starting to learn R. The exercise does not involve writing serious software programs in R, but rather to execute some interactive and intuitive commands to get some preliminary phenotype data analysis done. There will be some questions throughout that you can answer using your own words (and some data science intuition) with a few sentences. Some of them involve writing additional codes but you can mostly find and modify codes we provide as examples to address the questions. You do not have to answer all the questions but we strongly encourage you to make an attempt.</p>
+<p>Please save your work as you complete them, but <strong>do not</strong> push your version of the file back to your forked github repo. Instead please follow the instructions in Task 4 to report the analysis back to us.</p>
+<div id="dataset" class="section level3">
+<h3>Dataset</h3>
+<p>The data-set can be found as <code>data/UKB_Phenotype/data_cleaned.csv</code>.</p>
+<div style="page-break-after: always;"></div>
+<div style="page-break-after: always;"></div>
+</div>
+</div>
+<div id="genetic-association-study" class="section level2">
+<h2>Genetic association study</h2>
+<p>We perform genetic association studies to identify genetic factors (variants) that may be involved in a complex trait (tinnitus, asthma, etc) etiology. In brief, genetic association studies compare and identify difference in genetic data of individuals with disease (cases) to those without (controls). We report genetic variants that are observed more frequently in cases than in controls.</p>
+<p>In order to perform genetic association studies, we need phenotype data and genotype data from individuals we collect.</p>
+<ul>
+<li>Phenotype and covariate data: age, sex, height, weight, condition for that trait (tinnitus in the example below case), etc.</li>
+<li>Genotype data: You can roughly understand it as a sequence of the bases in DNA molecules, A/T/C/G, for all chromosomes in human genome.</li>
+</ul>
+<div id="disease-phenotype-data" class="section level3">
+<h3>Disease phenotype data</h3>
+<p>We use a toy data-set extracted from the UK Biobank project.</p>
+<p><strong>Load the data</strong></p>
+<p>Load <code>UKB_Phenotype/data_cleaned.csv</code>. Note, you only need to complete the codes when seeing <code>YOUR CODE</code>. Please execute other existing codes as is.</p>
+<pre class="r"><code># you need to put the data-set in the same folder
+# where this .rmd file sits,
+# which is here:
+getwd()
+sub_UKBB&lt;-read.csv(&quot;/Users/supengyuan/Documents/GitHub/orientation/data/UKB_Phenotype/data_cleaned.csv&quot;)</code></pre>
+<pre><code>[1] &quot;/Users/supengyuan/myproject&quot;</code></pre>
+<p><strong>Exploratory data analysis (EDA) of the data</strong></p>
+<pre class="r"><code>dim(sub_UKBB) # This data covering 144756 participants and 11 variables of them (IID, FID, etc)</code></pre>
+<pre><code>[1] 144756     11</code></pre>
+<pre class="r"><code>colnames(sub_UKBB) # 11 variables </code></pre>
+<pre><code> [1] &quot;IID&quot;         &quot;FID&quot;         &quot;f.4803.0.0&quot;  &quot;f.4803.1.0&quot;  &quot;f.4803.2.0&quot; 
+ [6] &quot;f.4803.3.0&quot;  &quot;f.22001.0.0&quot; &quot;f.21003.0.0&quot; &quot;f.21003.1.0&quot; &quot;f.21003.2.0&quot;
+[11] &quot;f.21003.3.0&quot;</code></pre>
+<pre class="r"><code>summary(sub_UKBB) </code></pre>
+<pre><code>      IID               FID           f.4803.0.0         f.4803.1.0       
+ Min.   :1000046   Min.   :1000046   Length:144756      Length:144756     
+ 1st Qu.:2267981   1st Qu.:2267981   Class :character   Class :character  
+ Median :3527260   Median :3527260   Mode  :character   Mode  :character  
+ Mean   :3521488   Mean   :3521488                                        
+ 3rd Qu.:4779335   3rd Qu.:4779335                                        
+ Max.   :6025411   Max.   :6025411                                        
+                                                                          
+  f.4803.2.0         f.4803.3.0        f.22001.0.0         f.21003.0.0   
+ Length:144756      Length:144756      Length:144756      Min.   :40.00  
+ Class :character   Class :character   Class :character   1st Qu.:51.00  
+ Mode  :character   Mode  :character   Mode  :character   Median :58.00  
+                                                          Mean   :56.98  
+                                                          3rd Qu.:63.00  
+                                                          Max.   :73.00  
+                                                                         
+  f.21003.1.0      f.21003.2.0      f.21003.3.0    
+ Min.   :43.00    Min.   :45.00    Min.   :50.00   
+ 1st Qu.:57.00    1st Qu.:58.00    1st Qu.:59.00   
+ Median :63.00    Median :65.00    Median :66.00   
+ Mean   :61.69    Mean   :64.36    Mean   :65.12   
+ 3rd Qu.:67.00    3rd Qu.:70.00    3rd Qu.:71.00   
+ Max.   :79.00    Max.   :82.00    Max.   :82.00   
+ NA&#39;s   :130131   NA&#39;s   :110381   NA&#39;s   :142607  </code></pre>
+<pre class="r"><code>head(sub_UKBB) # show part of the data</code></pre>
+<pre><code>      IID     FID                             f.4803.0.0 f.4803.1.0 f.4803.2.0
+1 1000046 1000046                                   &lt;NA&gt;       &lt;NA&gt;  No, never
+2 1000063 1000063                              No, never       &lt;NA&gt;       &lt;NA&gt;
+3 1000078 1000078                                   &lt;NA&gt;  No, never  No, never
+4 1000105 1000105 Yes, but not now, but have in the past       &lt;NA&gt;       &lt;NA&gt;
+5 1000112 1000112                                   &lt;NA&gt;       &lt;NA&gt;  No, never
+6 1000141 1000141                              No, never       &lt;NA&gt;       &lt;NA&gt;
+  f.4803.3.0 f.22001.0.0 f.21003.0.0 f.21003.1.0 f.21003.2.0 f.21003.3.0
+1       &lt;NA&gt;      Female          62          NA          73          NA
+2       &lt;NA&gt;        Male          43          NA          NA          NA
+3       &lt;NA&gt;      Female          52          57          60          NA
+4       &lt;NA&gt;      Female          54          NA          NA          NA
+5       &lt;NA&gt;        Male          58          NA          68          NA
+6       &lt;NA&gt;      Female          49          NA          NA          NA</code></pre>
+<p><strong>Q1:</strong> How many females and males are there in this data? Please show your code below how these numbers are computed.</p>
+<pre class="r"><code>q1_data = sub_UKBB %&gt;% 
+  mutate(
+    f.22001.0.0 = as.factor(f.22001.0.0)
+  )
+
+summary(q1_data$f.22001.0.0)</code></pre>
+<pre><code>Female   Male 
+ 77535  67221 </code></pre>
+<p>There are 77535 female and 67221 male in our data.</p>
+<p><strong>Q2:</strong> What type of trait do you think best describes tinnitus as a phenotype? A.Binary B. Continuous C. Ordinal</p>
+<p>C. Ordinal</p>
+<p><strong>Q3:</strong> Recode f.4803</p>
+<p>Field 4803 (f.4803) is the answers from participants for ACE touchscreen question “Do you get or have you had noises (such as ringing or buzzing) in your head or in one or both ears that lasts for more than five minutes at a time?”</p>
+<p>These fields contains answers to the questions in their first, 2nd, 3rd and 4th hospital visit: f.4803.0.0, f.4803.1.0, f.4803.2.0, f.4803.3.0.</p>
+<pre class="r"><code># Recode function:
+recode &lt;-function(df,column_name){
+  new_names&lt;-c()
+  for (i in column_name){
+    new_column_name&lt;-paste0(i,&quot;_recode&quot;)
+    new_names&lt;-c(new_names,new_column_name)
+    df[,new_column_name] &lt;- revalue(df[,i], c(&quot;No, never&quot;= 0, 
+                                            &quot;Yes, but not now, but have in the past&quot;= 1, 
+                                            &quot;Yes, now some of the time&quot;= 1, 
+                                            &quot;Yes, now a lot of the time&quot;= 1,
+                                            &quot;Yes, now most or all of the time&quot;= 1,
+                                            &quot;Prefer not to answer&quot;= NA,
+                                            &quot;Do not know&quot;= NA ))
+  }
+  return (list(df=df,new_column_names=new_names))
+}
+
+# columns needs to be recoded:
+column_name&lt;-c(&quot;f.4803.0.0&quot;,&quot;f.4803.1.0&quot;,&quot;f.4803.2.0&quot;,&quot;f.4803.3.0&quot;)
+
+# get a new data.frame with recoded columns added:
+df_recode&lt;-recode(df=sub_UKBB,column_name)$df
+
+# get names of recoded columns:
+new_column_names&lt;-recode(df=sub_UKBB,column_name)$new_column_names
+
+# show recode summary:
+for (i in new_column_names)
+{cat(i,&quot;summary:&quot;);print(table(df_recode[,i]));cat(&quot;\n&quot;)}</code></pre>
+<pre><code>f.4803.0.0_recode summary:
+    0     1 
+80805 31685 
+
+f.4803.1.0_recode summary:
+    0     1 
+10282  4214 
+
+f.4803.2.0_recode summary:
+    0     1 
+22583 11405 
+
+f.4803.3.0_recode summary:
+   0    1 
+1451  691 </code></pre>
+<p>What do you think has been achieved by recoding these fields?</p>
+<ol style="list-style-type: decimal">
+<li>character data have been chaged to number.</li>
+<li>The level of the fields becomes to two, which is binary data.</li>
+</ol>
+<p><strong>Q4:</strong> Define case and control status of tinnitus for each participant in the study:</p>
+<pre class="r"><code>data_sub &lt;- df_recode[,new_column_names]
+# Function to define cases
+f&lt;-function(x){
+  visit&lt;-c()
+  for (i in 1:4){
+    if (!is.na(x[i]))
+    {visit&lt;-c(visit,x[i])}
+  }
+  if (&quot;1&quot; %in% visit){result= TRUE}
+  else{result=FALSE}
+  return (result)
+}
+# Apply the above function
+df_recode$cases&lt;-apply(data_sub, 1, f)
+head(df_recode,10)</code></pre>
+<pre><code>       IID     FID                             f.4803.0.0 f.4803.1.0 f.4803.2.0
+1  1000046 1000046                                   &lt;NA&gt;       &lt;NA&gt;  No, never
+2  1000063 1000063                              No, never       &lt;NA&gt;       &lt;NA&gt;
+3  1000078 1000078                                   &lt;NA&gt;  No, never  No, never
+4  1000105 1000105 Yes, but not now, but have in the past       &lt;NA&gt;       &lt;NA&gt;
+5  1000112 1000112                                   &lt;NA&gt;       &lt;NA&gt;  No, never
+6  1000141 1000141                              No, never       &lt;NA&gt;       &lt;NA&gt;
+7  1000236 1000236                              No, never       &lt;NA&gt;  No, never
+8  1000248 1000248                              No, never       &lt;NA&gt;       &lt;NA&gt;
+9  1000269 1000269                                   &lt;NA&gt;       &lt;NA&gt;  No, never
+10 1000340 1000340                              No, never       &lt;NA&gt;       &lt;NA&gt;
+   f.4803.3.0 f.22001.0.0 f.21003.0.0 f.21003.1.0 f.21003.2.0 f.21003.3.0
+1        &lt;NA&gt;      Female          62          NA          73          NA
+2        &lt;NA&gt;        Male          43          NA          NA          NA
+3        &lt;NA&gt;      Female          52          57          60          NA
+4        &lt;NA&gt;      Female          54          NA          NA          NA
+5        &lt;NA&gt;        Male          58          NA          68          NA
+6        &lt;NA&gt;      Female          49          NA          NA          NA
+7        &lt;NA&gt;        Male          61          NA          70          NA
+8        &lt;NA&gt;        Male          63          NA          NA          NA
+9        &lt;NA&gt;        Male          60          NA          71          NA
+10       &lt;NA&gt;      Female          54          NA          NA          NA
+   f.4803.0.0_recode f.4803.1.0_recode f.4803.2.0_recode f.4803.3.0_recode
+1               &lt;NA&gt;              &lt;NA&gt;                 0              &lt;NA&gt;
+2                  0              &lt;NA&gt;              &lt;NA&gt;              &lt;NA&gt;
+3               &lt;NA&gt;                 0                 0              &lt;NA&gt;
+4                  1              &lt;NA&gt;              &lt;NA&gt;              &lt;NA&gt;
+5               &lt;NA&gt;              &lt;NA&gt;                 0              &lt;NA&gt;
+6                  0              &lt;NA&gt;              &lt;NA&gt;              &lt;NA&gt;
+7                  0              &lt;NA&gt;                 0              &lt;NA&gt;
+8                  0              &lt;NA&gt;              &lt;NA&gt;              &lt;NA&gt;
+9               &lt;NA&gt;              &lt;NA&gt;                 0              &lt;NA&gt;
+10                 0              &lt;NA&gt;              &lt;NA&gt;              &lt;NA&gt;
+   cases
+1  FALSE
+2  FALSE
+3  FALSE
+4   TRUE
+5  FALSE
+6  FALSE
+7  FALSE
+8  FALSE
+9  FALSE
+10 FALSE</code></pre>
+<p>How many cases and how many controls do we have for this phenotpype?</p>
+<pre class="r"><code>q4_data = df_recode %&gt;% 
+  mutate(
+    cases = as.factor(cases)
+  )
+summary(q4_data$cases)</code></pre>
+<pre><code> FALSE   TRUE 
+101550  43206 </code></pre>
+<p>There are 43206 cases and 101550 controls for this phenotpype.</p>
+<p><strong>Q5:</strong> Extract a subset of columns from all participants for association study.</p>
+<pre class="r"><code>df_cases  &lt;- df_recode %&gt;%
+  select(IID,FID,cases)%&gt;% 
+  filter(cases==TRUE)
+head(df_cases,10)  </code></pre>
+<pre><code>       IID     FID cases
+1  1000105 1000105  TRUE
+2  1000357 1000357  TRUE
+3  1000443 1000443  TRUE
+4  1000494 1000494  TRUE
+5  1000625 1000625  TRUE
+6  1000713 1000713  TRUE
+7  1000728 1000728  TRUE
+8  1000745 1000745  TRUE
+9  1000875 1000875  TRUE
+10 1000992 1000992  TRUE</code></pre>
+<p>Please modify codes above to extract all the controls and keep only these columns: <code>FID</code>, <code>IID</code>, <code>cases</code>, <code>f.22001.0.0</code>, <code>f.21003.0.0</code>, <code>f.21003.1.0</code>, <code>f.21003.2.0</code>, <code>f.21003.3.0</code>. Please show the first 10 rows of the output.</p>
+<pre class="r"><code># YOUR CODE
+q5_data = df_recode %&gt;% 
+  select(FID, IID, cases, f.22001.0.0, f.21003.0.0, f.21003.1.0, f.21003.2.0, f.21003.3.0) %&gt;% 
+  filter(cases == TRUE)
+
+head(q5_data, 10)</code></pre>
+<pre><code>       FID     IID cases f.22001.0.0 f.21003.0.0 f.21003.1.0 f.21003.2.0
+1  1000105 1000105  TRUE      Female          54          NA          NA
+2  1000357 1000357  TRUE      Female          69          NA          NA
+3  1000443 1000443  TRUE      Female          45          NA          52
+4  1000494 1000494  TRUE        Male          61          NA          NA
+5  1000625 1000625  TRUE      Female          60          NA          NA
+6  1000713 1000713  TRUE        Male          58          NA          67
+7  1000728 1000728  TRUE        Male          61          NA          NA
+8  1000745 1000745  TRUE        Male          60          NA          NA
+9  1000875 1000875  TRUE        Male          59          NA          NA
+10 1000992 1000992  TRUE        Male          48          NA          56
+   f.21003.3.0
+1           NA
+2           NA
+3           NA
+4           NA
+5           NA
+6           NA
+7           NA
+8           NA
+9           NA
+10          NA</code></pre>
+<div style="page-break-after: always;"></div>
+</div>
+<div id="covariates" class="section level3">
+<h3>Covariates</h3>
+<p><strong>Q6:</strong> Field 21003 contains the information of the age of participants, same as field 4803. Note that some of them have more than one age. Can you guess why?</p>
+<p>Sorry, I do not know about that. I guess it may be because some patients may not remember their age clearly. And the doctors may judge their ages by themselves. Hence, it shows deviation.</p>
+<p><strong>Q7:</strong> For those with more than one age records, which age do you think should be used in the genetic association analysis?</p>
+<p>The perceived age should be used in it.</p>
+<p><strong>Q8:</strong> Please compute a summary of age information for controls (you can use <code>summary()</code> function in R):</p>
+<pre class="r"><code>#YOUR CODE
+
+summary(q5_data$f.21003.0.0)</code></pre>
+<pre><code>   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  40.00   52.00   59.00   57.48   64.00   70.00 </code></pre>
+<div style="page-break-after: always;"></div>
+</div>
+<div id="association-testing-via-regression-analysis" class="section level3">
+<h3>Association testing via regression analysis</h3>
+<p>To identify genetic factors that may be involved in this trait (tinnitus), we would need to find the association between the genotype and the phenotype. Regression analysis is the basis of many association analysis. Instead of overwhelming you with huge genotype data, we use here a simple dataset for regression analysis to demonstrate what association studies look like.</p>
+<p>We fit below simple linear model with 2 variables from a data-set to see their relationship. For example <code>mpg</code> vs. <code>weight</code> in this <code>ISLR::Auto</code> data-set.</p>
+<p><strong>Q9:</strong> Is there association between <code>mpg of the car</code> and <code>weight of the car</code>? If so, it appearing to be positive or negative? Is the association significant and why?</p>
+<p>From the results, we could find that the association between them is appearred to be negative, which means <code>mpg of the car</code> will decrease while t<code>he weight of the car</code> increase. According to the result of p-value (&lt;2e-16), which is less than 0.01, the association is significant.</p>
+<pre><code>Loading required namespace: ISLR</code></pre>
+<pre><code>
+Call:
+lm(formula = mpg ~ weight, data = auto_data)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-11.9736  -2.7556  -0.3358   2.1379  16.5194 
+
+Coefficients:
+             Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept) 46.216524   0.798673   57.87   &lt;2e-16 ***
+weight      -0.007647   0.000258  -29.64   &lt;2e-16 ***
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+
+Residual standard error: 4.333 on 390 degrees of freedom
+Multiple R-squared:  0.6926,    Adjusted R-squared:  0.6918 
+F-statistic: 878.8 on 1 and 390 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p><strong>Q10:</strong> Please create a new variable to indicate cars having MPG greater than 23 as 1, otherwise 0, then use logistic regrssion via <code>glm()</code> function to analyze association between weight and this new variable you just created. Please comment on what you find.</p>
+<pre class="r"><code>q10_data = auto_data %&gt;% 
+  mutate(
+    mpg_level = case_when(
+      mpg &gt;= 23 ~ 1,
+      TRUE ~ 0
+    ),
+    mpg_level = as.factor(mpg_level)
+  )
+# fit model
+fit_10 = glm(mpg_level ~ weight, family = binomial(link = &#39;logit&#39;), q10_data)
+summary(fit_10)</code></pre>
+<pre><code>
+Call:
+glm(formula = mpg_level ~ weight, family = binomial(link = &quot;logit&quot;), 
+    data = q10_data)
+
+Deviance Residuals: 
+     Min        1Q    Median        3Q       Max  
+-2.47456  -0.29696   0.04822   0.38160   2.93790  
+
+Coefficients:
+             Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept) 11.763284   1.162411  10.120   &lt;2e-16 ***
+weight      -0.004119   0.000413  -9.974   &lt;2e-16 ***
+---
+Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 543.43  on 391  degrees of freedom
+Residual deviance: 228.31  on 390  degrees of freedom
+AIC: 232.31
+
+Number of Fisher Scoring iterations: 6</code></pre>
+<p><span class="math inline">\(log(\frac{\pi}{1-\pi})=\beta_0+\beta_1X_{weight}\)</span> exp(beta_1) = is the odds ratio for the association betwwen mgp level and weight, holding exposure status fixed. With <span class="math inline">\(\hat\beta_1\)</span>=-0.0041, the odds of having higher level of mgp (&gt;23) will decrease 0.4% (exp(-0.0041)=0.9959) for one level increase in weight.</p>
+<p><strong>Q11:</strong> Find the <code>Estimates</code> from your association results summary. How do you interpret the estimated effects of weight in the context of linear regression, and in the context of logistic regression?</p>
+<p>From the linear regression, with 1 unit increase in weight, the mgp will decrease 0.0076 unit.</p>
+<p>As for the logistic regression, the interpretation is in Q10.</p>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 4.0.3 (2020-10-10)
+Platform: x86_64-apple-darwin17.0 (64-bit)
+Running under: macOS Catalina 10.15.5
+
+Matrix products: default
+BLAS:   /Library/Frameworks/R.framework/Versions/4.0/Resources/lib/libRblas.dylib
+LAPACK: /Library/Frameworks/R.framework/Versions/4.0/Resources/lib/libRlapack.dylib
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] reshape2_1.4.4  pROC_1.17.0.1   knitr_1.30      rapportools_1.0
+ [5] reshape_0.8.8   ggpubr_0.4.0    pander_0.6.4    forcats_0.5.0  
+ [9] stringr_1.4.0   purrr_0.3.4     readr_1.4.0     tidyr_1.1.2    
+[13] tibble_3.0.4    tidyverse_1.3.0 plyr_1.8.6      ggplot2_3.3.5  
+[17] dplyr_1.0.2     pacman_0.5.1   
+
+loaded via a namespace (and not attached):
+ [1] httr_1.4.2        jsonlite_1.7.1    carData_3.0-4     modelr_0.1.8     
+ [5] assertthat_0.2.1  cellranger_1.1.0  yaml_2.2.1        pillar_1.4.7     
+ [9] backports_1.2.0   glue_1.4.2        digest_0.6.27     promises_1.1.1   
+[13] ggsignif_0.6.2    rvest_0.3.6       colorspace_2.0-0  htmltools_0.5.0  
+[17] httpuv_1.5.4      pkgconfig_2.0.3   broom_0.7.9       haven_2.3.1      
+[21] scales_1.1.1      openxlsx_4.2.4    later_1.1.0.1     rio_0.5.27       
+[25] git2r_0.27.1      generics_0.1.0    car_3.0-11        ellipsis_0.3.1   
+[29] withr_2.3.0       cli_2.2.0         magrittr_2.0.1    crayon_1.3.4     
+[33] readxl_1.3.1      evaluate_0.14     fs_1.5.0          fansi_0.4.1      
+[37] rstatix_0.7.0     xml2_1.3.2        foreign_0.8-80    tools_4.0.3      
+[41] data.table_1.13.2 hms_0.5.3         lifecycle_0.2.0   munsell_0.5.0    
+[45] reprex_0.3.0      zip_2.2.0         compiler_4.0.3    rlang_0.4.11     
+[49] grid_4.0.3        rstudioapi_0.13   ISLR_1.2          rmarkdown_2.5    
+[53] gtable_0.3.0      abind_1.4-5       DBI_1.1.0         curl_4.3         
+[57] R6_2.5.0          lubridate_1.7.9.2 workflowr_1.6.2   rprojroot_2.0.2  
+[61] stringi_1.5.3     Rcpp_1.0.5        vctrs_0.3.5       dbplyr_2.0.0     
+[65] tidyselect_1.1.0  xfun_0.19        </code></pre>
+</div>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+http://docs.mathjax.org/en/latest/configuration.html.  This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
